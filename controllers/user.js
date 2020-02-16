@@ -2,6 +2,8 @@
 
 var validator = require('validator');
 var bcrypt = require('bcrypt-nodejs');
+var fs = require('fs');
+var path = require('path');
 var User = require('../models/user');
 var jwt = require('../services/jwt');
 
@@ -23,10 +25,17 @@ var controller = {
 		//Recojer los parametros de la peticion
 		var params = req.body;
 		//Validar los datos
+		try{
 		var validate_name = !validator.isEmpty(params.name);
 		var validate_surname = !validator.isEmpty(params.surname);
 		var validate_email = !validator.isEmpty(params.email) && validator.isEmail(params.email);
 		var validate_password = !validator.isEmpty(params.password);
+		}catch{
+			return res.status(500).send({
+				message: "Faltan datos por enviar",
+				params
+			});
+		}
 
 		//console.log(validate_name, validate_surname, validate_email, validate_password);
 		if(validate_name && validate_surname && validate_email && validate_password){
@@ -99,8 +108,14 @@ var controller = {
 		var params = req.body;
 
 		//validar los datos
+		try{
 		var validate_email = !validator.isEmpty(params.email) && validator.isEmail(params.email);
 		var validate_password = !validator.isEmpty(params.password);
+	    }catch(err){
+	    	return res.status(500).send({
+				message: "Faltan datos por enviar"
+			});
+	    }
 
 		if(!validate_email || !validate_password){
 			return res.status(500).send({
@@ -140,7 +155,7 @@ var controller = {
 							//Limpiar el objeto
 							user.password = undefined;
 							//Devolver datos OK
-							return res.status(200).send({
+							return res.status(201).send({
 								message: "Exito",
 								user
 							});
@@ -159,14 +174,112 @@ var controller = {
 	},
 
 	update: function(req,res){
-		//Crear middleware para comprobar jwt token y adjuntar
-		//
+		//Recojer datos del usuario
+		var params = req.body;
+		
+		//Validar datos
+		try{
+		var validate_name = !validator.isEmpty(params.name);
+		var validate_surname = !validator.isEmpty(params.surname);
+		var validate_email = !validator.isEmpty(params.email) && validator.isEmail(params.email);
+	    }catch(err){
+	    	return res.status(500).send({
+				message: "Faltan datos por enviar"
+			});
+	    }
+		//var validate_password = !validator.isEmpty(params.password);
+
+		//Eliminar propiedades innecesarias
+		var userId = req.user.sub;
+		//console.log(userId);
+		delete params.password;
+		//console.log(req.user.email);
+		//console.log(params.email);
+		//Comprobar si el email es unico
+				
+		if(req.user.email != params.email){
+			User.findOne({ email: params.email.toLowerCase()}, (err, user) => {
+				if(err){
+					return res.status(500).send({
+						message: "Error al intentar identificarse"
+					});
+				}
+				if(user && user.email == params.email ){
+					return res.status(200).send({
+						message: "El email ya existe en la base de datos"
+					});
+				}
+				// Buscar y actualizar documento de la base de datos
+					User.findOneAndUpdate({_id: userId},params, {new:true}, (err,userUpdated) => {
+						if(err){
+							return res.status(500).send({
+							    status: 'error',
+						        message: 'Error al actualizar usuario'
+						    });
+						}
+                        if(!userUpdated){
+							return res.status(500).send({
+								status: 'error',
+							    message: 'Error al actualizar usuario userUpdated'
+							});
+						}
+						return res.status(200).send({
+							status: "success",
+						    user: userUpdated
+						});
+					});
+			});
+		}else{
+			 return res.status(500).send({
+			    status: 'error',
+				message: 'Error al actualizar usuario userUpdated'
+				});
+        }
+	},
+	uploadAvatar: function(req,res){
+		//Configurar el modulo multiparty routes/users.js
+
+		//Recoger el fichero de la peticion
+		var file_name = 'Avatar no subido...';
+
+		if(!req.files){
+			return res.status(404).send({
+			    status: "error",
+			    message: file_name
+		    });
+		}
+
+		//Conseguir el nombre y la extension del archivo subido
+		var file_path = req.files.file0.path;
+		var file_split = file_path.split('\\');
+
+		var file_name = file_split[2];
+		var file_extension = file_name.split('.');
+		var file_ext = file_extension[1];
+
+		//Comprobar extension (solo imagenes), si no es valida borrar archivo subido
+		if(file_ext != "png" && file_ext != "jpg" && file_ext != "jpeg" && file_ext != "gif" ){
+			
+		fs.unlink(file_path, (err) => {
+			return res.status(404).send({
+			    status: "error",
+			    message: "La extension del archivo no es valida"
+		    });
+		});
+	}else{
+
+		//Sacar el id del usuario identificado
+
+		//Buscar y actualizar documento de la DB
+
+		//Devolver una respuesta
 
 		return res.status(200).send({
-			message: "Metodo de actualizacion"
-	    });
+			message: "Upload Avatar",
+			file: file_ext
+		});
 	}
-
+	}
 };
 
 module.exports = controller;

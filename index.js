@@ -4,6 +4,9 @@ var mongoose = require('mongoose');
 var app = require('./app');
 var port = process.env.PORT || 3999;
 
+//Constructor mongoose
+mongoose.set('useFindAndModify',false);
+mongoose.set('useUnifiedTopology', true);
 mongoose.Promise = global.Promise;
 
 mongoose.connect('mongodb://localhost:27017/api_rest_node', {useNewUrlParser: true})

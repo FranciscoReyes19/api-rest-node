@@ -16,7 +16,6 @@ exports.authenticated = function(req, res, next){
 
 	//Limpiar el token y quitar comillas
 	var token = req.headers.authorization.replace(/['*]+/g, '');
-
 	
 	try{
 		//Decodificar el token
