@@ -6,7 +6,7 @@ var moment = require('moment');
 var secret = 'clave-secreta-token95';
 
 exports.authenticated = function(req, res, next){
-	//comprobar si nos llega la cabecera de autorizacion
+	//comprobar si nos llega la cabecera de autorizacion, se debe llamar authorization literalmente en el header
 
 	if(!req.headers.authorization){
 		return res.status(403).send({

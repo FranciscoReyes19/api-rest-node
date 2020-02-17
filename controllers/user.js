@@ -269,16 +269,74 @@ var controller = {
 	}else{
 
 		//Sacar el id del usuario identificado
+		var userId = req.user.sub;
 
 		//Buscar y actualizar documento de la DB
+		User.findOneAndUpdate(userId, {image: file_name},{new:true}, (err,userUpdated) => {
+			//Devolver una respuesta
+			if(err || !userUpdated){
+				return res.status(500).send({
+				    status : "error",
+				    message: "Error al guardar el usuario"
+			    });
+			}
 
-		//Devolver una respuesta
+			return res.status(200).send({
+				status: 'success',
+				message: 'Upload AVATAR',
+				user: userUpdated
+			});
 
-		return res.status(200).send({
-			message: "Upload Avatar",
-			file: file_ext
-		});
+		});	
 	}
+	},
+	avatar: function(req,res){
+		var fileName = req.params.fileName;
+		var pathFile = './uploads/users/'+fileName;
+
+		fs.exists(pathFile, (exists) => {
+			if(exists){
+				return res.sendFile(path.resolve(pathFile));
+			}else{
+				return res.status(404).send({
+					message: 'La imagen no existe'
+
+				});
+			}
+
+		});
+	},
+
+	getUsers: function(req, res){
+		User.find().exec((err,users) => {
+			if(err || !users){
+				return res.status(404).send({
+					status: 'error',
+					message: 'no hay usuarios que mostrar'
+				})
+			}
+
+			return res.status(200).send({
+				status: 'success',
+				users
+			});
+		});
+	},
+	getUser: function(req,res){
+		var userId = req.params.userId;
+		User.findById(userId).exec((err,user) => {
+			if(err || !user){
+				return res.status(404).send({
+					status: 'error',
+					message: 'no existe el usuario'
+				})
+			}
+
+			return res.status(200).send({
+				status: 'success',
+				user
+			});
+		});
 	}
 };
 
