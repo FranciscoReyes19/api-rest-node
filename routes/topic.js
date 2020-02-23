@@ -11,5 +11,8 @@ router.post('/topic', md_auth.authenticated, TopicController.save);
 router.get('/topics/:page?', TopicController.getTopics);
 router.get('/topic/:id', TopicController.getTopic);
 router.get('/user-topics/:user', TopicController.getMyTopicsByUser);
+//PUT para actualizar
+router.put('/topic/:id', md_auth.authenticated, TopicController.update);
+router.delete('/topic/:id', md_auth.authenticated, TopicController.delete);
 
 module.exports  = router;

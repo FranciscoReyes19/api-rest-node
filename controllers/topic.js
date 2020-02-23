@@ -171,6 +171,87 @@ var controller = {
 				});
 
     	     });
+    },
+
+    update: function(req,res){
+    	//Recojer el ID del topic de la URL
+    	var topicId = req.params.id;
+    	//recojer los datos que llegan desde post
+    	var params = req.body;
+    	//validar datos
+    	try{
+			var validate_title = !validator.isEmpty(params.title);
+			var validate_content = !validator.isEmpty(params.content);;
+			var validate_lang = !validator.isEmpty(params.lang);
+
+		}catch(err){
+		
+		return res.status(200).send({
+			    message: 'Faltan datos por enviar',
+			    err
+		    });
+
+		}
+		if(validate_title && validate_content && validate_lang){
+	    	//montar un JSON con los datos modificables
+	    	var update = {
+	    		title: params.title,
+	    		content: params.content,
+	    		code: params.code,
+	    		lang: params.lang
+	    	};
+
+	    	//Find and Update del topic por id y por id de usuario
+	    	Topic.findOneAndUpdate({_id:topicId, user: req.user.sub}, update, {new:true}, (err,topicUpdated) => {
+	    		if(err){
+	    			return res.status(500).send({
+	    				status:'success',
+					    message: 'Error en la peticion'
+				    });
+	    		}
+	    		if(!topicUpdated){
+	    			return res.status(404).send({
+	    				status:'success',
+					    message: 'No se ha actualizado el tema'
+				    });
+	    		}
+	    		return res.status(200).send({
+		    		status:'success',
+				    topicUpdated
+		    	});
+
+	    	});
+
+	    }else{
+	    	return res.status(500).send({
+	    		message: 'La validacion de los datos no es correcta'
+	    	});
+    	}
+    },
+
+    delete: function(req,res){
+    	//Obtener el id del topic de la url
+    	var topicId = req.params.id;
+    	//find and delete por topic id y por userId
+    	Topic.findOneAndDelete({_id:topicId,user:req.user.sub},(err,topicDeleted) => {
+    		if(err){
+    			return res.status(500).send({
+		    		status: 'error',
+		    		message: 'Error en la peticion'
+	    		});
+    		}
+    		if(!topicDeleted){
+    			return res.status(500).send({
+		    		status: 'error',
+		    		message: 'No se ha borrado el tema'
+	    		});
+    		}
+    	    //Devolver una respuesta
+    		return res.status(200).send({
+	    		message: 'success',
+	    		topic: topicDeleted
+	    	});
+    	});
     }
 };
 
