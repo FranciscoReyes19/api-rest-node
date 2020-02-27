@@ -20,6 +20,31 @@ var controller = {
 			message: "Soy un metodo testeando"
 		});
 	},
+	deleteUser: function(req,res){
+
+		var idUser = req.params.userId;
+		User.findOneAndDelete({ _id: idUser }, (err, user) => {
+
+			if(err){
+				return res.status(500).send({
+					message: "Error al intentar borrar al usuario",
+				});
+
+			}
+			if(!user){
+				return res.status(404).send({
+					message: "El usuario no existe",
+				});
+			}
+			if(user){
+					return res.status(200).send({
+						message: "Eliminacion de usuario exitosa"
+					});
+		    	} 
+			}
+
+	    );
+	},
 
 	save: function(req,res){
 		//Recojer los parametros de la peticion

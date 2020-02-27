@@ -20,5 +20,6 @@ router.post('/upload-avatar/:id', [md_auth.authenticated,md_upload], UserControl
 router.get('/avatar/:fileName', UserController.avatar);
 router.get('/users', UserController.getUsers);
 router.get('/user/:userId', UserController.getUser);
+router.delete('/user/:userId', UserController.deleteUser);
 
 module.exports = router;
