@@ -218,20 +218,23 @@ var controller = {
 		var userId = req.user.sub;
 		//console.log(userId);
 		delete params.password;
-		//console.log(req.user.email);
-		//console.log(params.email);
+		console.log(userId);
+		console.log(params.email);
 		//Comprobar si el email es unico
 				
-		if(req.user.email != params.email){
+		if(req.user.email != params.email || req.user.email == params.email){
 			User.findOne({ email: params.email.toLowerCase()}, (err, user) => {
+				console.log(user._id);
 				if(err){
 					return res.status(500).send({
+						status: 'error',
 						message: "Error al intentar identificarse"
 					});
 				}
-				if(user && user.email == params.email ){
+				if(user && user.email == params.email && userId != user._id){
 					return res.status(200).send({
-						message: "El email ya existe en la base de datos"
+						status: 'error',
+						message: "El email ya existe y pertenece a otro usuario"
 					});
 				}
 				// Buscar y actualizar documento de la base de datos
@@ -257,7 +260,7 @@ var controller = {
 		}else{
 			 return res.status(500).send({
 			    status: 'error',
-				message: 'Error al actualizar usuario userUpdated'
+				message: 'Error al actualizar usuario userUpdated general'
 				});
         }
 	},
