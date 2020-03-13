@@ -49,18 +49,31 @@ var controller = {
 							return res.status(500).send({
 							status: 'error',
 							message:'Erro en la peticion'
-						});
-
+							});
 						}
+							Topic.findById(topic._id)
+					    	     .populate('user')
+					    	     .populate('comments.user')
+					    	     .exec((err,topic) => {
+					    	     	if(err){
+					    	     		return res.status(500).send({
+					    					status: 'error',
+					    					message: 'Error populacion extra-err'
+										});
+					    	     	}
+					    	     	if(!topic){
+					    	     		return res.status(404).send({
+					    					status: 'error',
+					    					message: 'Error populacion extra-topic'
+										});
+					    	     	}
+					    	     	//Devolver el resultado
+					                return res.status(200).send({
+					    				status: 'success',
+					    				topic
+									});
 
-						return res.status(200).send({
-							status: 'success',
-							topic
-						});
-						//Devolver una respuesta
-						return res.status(200).send({
-							message:'metodo de añadir comentario'
-						});
+					    	    })
 					});
 
 				}else{

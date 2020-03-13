@@ -151,6 +151,7 @@ var controller = {
     	//Hacer un Find por Id del topic
     	Topic.findById(topicId)
     	     .populate('user')
+    	     .populate('comments.user')
     	     .exec((err,topic) => {
     	     	if(err){
     	     		return res.status(500).send({
