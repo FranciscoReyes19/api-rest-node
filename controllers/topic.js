@@ -253,7 +253,39 @@ var controller = {
 	    		topic: topicDeleted
 	    	});
     	});
-    }
+    },
+    search: function(req,res){
+		//Sacar el string a buscar de la URL
+		var searchString = req.params.search;
+		//find con un operador OR
+		Topic.find({ "$or": [
+			{ "title": { "$regex": searchString, "$options": "i"} }, 
+			{ "content": { "$regex": searchString, "$options": "i"} },
+			{ "lang": { "$regex": searchString, "$options": "i"} },
+			{ "code": { "$regex": searchString, "$options": "i"} }
+		]})
+		.sort([['date','descending']])
+		.populate('user')
+		.exec( (err,topics) => {
+			if(err){
+				return res.status(500).send({
+					status: 'error',
+					message: 'error en la peticion'
+				});
+			}
+			if(!topics){
+				return res.status(404).send({
+					status: 'error',
+					message: 'No hay temas disponibles'
+				});
+			}
+			//Devolver el resultado
+			return res.status(200).send({
+					status: 'success',
+					topics
+			});
+		});
+	}
 };
 
 module.exports = controller;

@@ -73,7 +73,7 @@ var controller = {
 					    				topic
 									});
 
-					    	    })
+					    	    });
 					});
 
 				}else{
@@ -164,10 +164,29 @@ var controller = {
 							});
 						}
 						//Devolver el resultado
-						return res.status(200).send({
-							status: 'success',
-							topic
-						});
+						Topic.findById(topic._id)
+					    	     .populate('user')
+					    	     .populate('comments.user')
+					    	     .exec((err,topic) => {
+					    	     	if(err){
+					    	     		return res.status(500).send({
+					    					status: 'error',
+					    					message: 'Error populacion extra-err2'
+										});
+					    	     	}
+					    	     	if(!topic){
+					    	     		return res.status(404).send({
+					    					status: 'error',
+					    					message: 'Error populacion extra-topic2'
+										});
+					    	     	}
+					    	     	//Devolver el resultado
+					                return res.status(200).send({
+					    				status: 'success',
+					    				topic
+									});
+
+					    	    });
 					});
 			}else{
 				return res.status(404).send({
@@ -175,37 +194,6 @@ var controller = {
 					message:'No existe el comentario'
 				});
 			}
-		});
-	},
-	search: function(req,res){
-		//Sacar el string a buscar de la URL
-		var searchString = req.params.search;
-		//find con un operador OR
-		Topic.find({ "$or": [
-			{ "title": { "$regex": searchString, "$options": "i"} }, 
-			{ "content": { "$regex": searchString, "$options": "i"} },
-			{ "lang": { "$regex": searchString, "$options": "i"} },
-			{ "code": { "$regex": searchString, "$options": "i"} }
-		]})
-		.sort([['date','descending']])
-		.exec( (err,topics) => {
-			if(err){
-				return res.status(500).send({
-					status: 'error',
-					message: 'error en la peticion'
-				});
-			}
-			if(!topics){
-				return res.status(404).send({
-					status: 'error',
-					message: 'No hay temas disponibles'
-				});
-			}
-			//Devolver el resultado
-			return res.status(200).send({
-					status: 'success',
-					topics
-			});
 		});
 	}
 
